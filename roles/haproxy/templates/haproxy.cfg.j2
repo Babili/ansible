@@ -55,4 +55,4 @@ backend letsencrypt-backend
   server letsencrypt {{ internal_host_ip }}:54321 inter 1s fall 1 rise 1
 
 backend rabbitmq-backend
-  server rabbitmq {{ internal_host_ip }}:15672 inter 1s fall 1 rise 1
+  server rabbitmq rabbitmq:15672 inter 1s fall 1 rise 1
