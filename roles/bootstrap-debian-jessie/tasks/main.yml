@@ -29,7 +29,6 @@
     - ca-certificates
     - curl
     - software-properties-common
-    -
 
 - name: add docker-ce apt key
   become: yes

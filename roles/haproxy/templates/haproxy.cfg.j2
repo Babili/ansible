@@ -32,6 +32,9 @@ frontend https
   acl letsencrypt path_beg /.well-known/acme-challenge/
   use_backend letsencrypt-backend if letsencrypt
 
+  acl internal_url path_beg /internal
+  http-request deny if internal_url
+
   acl pusher-socket-path path_beg /socket.io
   use_backend pusher-backend if pusher-socket-path
 
