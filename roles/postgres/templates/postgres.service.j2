@@ -1,0 +1,21 @@
+[Unit]
+Description=Postgres
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker rm -v postgres
+ExecStart=/usr/bin/docker run \
+  --name postgres \
+  --hostname postgres.{{ inventory_hostname }} \
+  --net babili \
+  --volumes-from postgres-data \
+  --env-file /etc/babili/environments/postgres.env \
+  {{ docker_image }}
+ExecStop=/usr/bin/docker stop -t 5 postgres
+
+[Install]
+WantedBy=multi-user.target

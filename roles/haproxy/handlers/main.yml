@@ -1,0 +1,24 @@
+- name: auto-start haproxy
+  become: yes
+  service:
+    name: haproxy.service
+    enabled: yes
+
+- name: auto-start le-renew-haproxy
+  become: yes
+  service:
+    name: le-renew-haproxy.timer
+    enabled: yes
+
+- name: restart haproxy
+  become: yes
+  service:
+    name:  haproxy.service
+    state: restarted
+
+- name: restart le-renew-haproxy
+  become: yes
+  service:
+    name:  le-renew-haproxy.service
+    state: restarted
+

@@ -1,0 +1,21 @@
+[Unit]
+Description=Engine Migrations
+After=docker.service postgres.service redis.service rabbitmq.service
+Requires=docker.service postgres.service redis.service rabbitmq.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+StandardOutput=journal
+ExecStartPre=-/usr/bin/docker kill engine-migrations
+ExecStartPre=-/usr/bin/docker rm -v engine-migrations
+ExecStart=/usr/bin/docker run \
+  --name engine-migrations \
+  --hostname engine-migrations.{{ inventory_hostname }} \
+  --net babili \
+  --env-file /etc/babili/environments/engine.env \
+  {{ docker_image }} \
+  bundle exec rake db:migrate
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+- name: auto-start rabbitmq
+  become: yes
+  service:
+    name: rabbitmq.service
+    enabled: yes
+
+- name: restart rabbitmq
+  become: yes
+  service:
+    name:  rabbitmq.service
+    state: restarted

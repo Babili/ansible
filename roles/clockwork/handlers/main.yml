@@ -1,0 +1,11 @@
+- name: auto-start clockwork
+  become: yes
+  service:
+    name: clockwork.service
+    enabled: yes
+
+- name: restart clockwork
+  become: yes
+  service:
+    name:  clockwork.service
+    state: restarted

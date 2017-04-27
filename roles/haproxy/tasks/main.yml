@@ -1,0 +1,91 @@
+- name: copy haproxy environment file
+  become: yes
+  template:
+    src: haproxy.env.j2
+    dest: /etc/babili/environments/haproxy.env
+  notify:
+    - restart haproxy
+
+- name: copy letsencrypt renew configuration file
+  become: yes
+  template:
+    src: le-renew-haproxy.ini.j2
+    dest: /etc/babili/le-renew-haproxy.ini
+
+- name: copy letsencrypt renew script
+  become: yes
+  template:
+    src: le-renew-haproxy.sh.j2
+    dest: /etc/babili/le-renew-haproxy.sh
+    mode: "u=rwx,g=rwx,o=x"
+
+- name: copy haproxy configuration
+  become: yes
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/babili/haproxy.cfg
+  notify:
+    - restart haproxy
+
+- name: copy letsencrypt renew systemd unit
+  become: yes
+  template:
+    src: le-renew-haproxy.service.j2
+    dest: /etc/systemd/system/le-renew-haproxy.service
+  notify:
+    - reload systemd units
+
+- name: copy letsencrypt renew systemd timer
+  become: yes
+  template:
+    src: le-renew-haproxy.timer.j2
+    dest: /etc/systemd/system/le-renew-haproxy.timer
+  notify:
+    - reload systemd units
+    - restart le-renew-haproxy
+    - auto-start le-renew-haproxy
+
+- name: copy haproxy systemd unit
+  become: yes
+  template:
+    src: haproxy.service.j2
+    dest: /etc/systemd/system/haproxy.service
+  notify:
+    - reload systemd units
+    - restart haproxy
+    - auto-start haproxy
+
+- name: check if boostrap letsencrypt certificate is required
+  become: yes
+  stat:
+    path: "/etc/letsencrypt/live/{{ external_host }}/fullchain.pem"
+  register: letsencrypt_bootstrap
+
+- name: ask certificate to lets encrypt
+  become: yes
+  command: "/opt/letsencrypt/letsencrypt-auto certonly --standalone -n -q --agree-tos -m {{ letsencrypt_email }} --domains {{ external_host }}"
+  when: letsencrypt_bootstrap.stat.exists == False
+
+- name: check if combined certificate exists
+  become: yes
+  stat:
+    path: "{{ haproxy_combined_file }}"
+  register: haproxy_combined_certificate
+
+- name: create combined certificate for haproxy
+  become: yes
+  command: "bash -c 'cat /etc/letsencrypt/live/{{ external_host }}/fullchain.pem /etc/letsencrypt/live/{{ external_host }}/privkey.pem > {{ haproxy_combined_file }}'"
+  when: haproxy_combined_certificate.stat.exists == False
+  notify:
+    - restart haproxy
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart haproxy

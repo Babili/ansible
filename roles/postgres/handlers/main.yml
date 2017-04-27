@@ -1,0 +1,11 @@
+- name: auto-start postgres
+  become: yes
+  service:
+    name: postgres.service
+    enabled: yes
+
+- name: restart postgres
+  become: yes
+  service:
+    name:  postgres.service
+    state: restarted

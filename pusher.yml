@@ -1,0 +1,6 @@
+- hosts: hosts
+  gather_facts: no
+  become_method: sudo
+
+  roles:
+  - pusher

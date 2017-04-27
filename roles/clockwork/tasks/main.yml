@@ -1,0 +1,28 @@
+- name: copy clockwork environment file
+  become: yes
+  template:
+    src: clockwork.env.j2
+    dest: /etc/babili/environments/clockwork.env
+  notify:
+    - restart clockwork
+
+- name: copy clockwork systemd unit
+  become: yes
+  template:
+    src: clockwork.service.j2
+    dest: /etc/systemd/system/clockwork.service
+  notify:
+    - reload systemd units
+    - restart clockwork
+    - auto-start clockwork
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart clockwork

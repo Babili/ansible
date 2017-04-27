@@ -1,0 +1,11 @@
+- name: auto-start redis
+  become: yes
+  service:
+    name: redis.service
+    enabled: yes
+
+- name: restart redis
+  become: yes
+  service:
+    name:  redis.service
+    state: restarted

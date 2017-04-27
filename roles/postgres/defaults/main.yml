@@ -1,0 +1,2 @@
+docker_image_repository:  "postgres"
+docker_image_tag:         "9.6"

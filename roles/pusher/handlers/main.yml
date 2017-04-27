@@ -1,0 +1,11 @@
+- name: auto-start pusher
+  become: yes
+  service:
+    name: pusher.service
+    enabled: yes
+
+- name: restart pusher
+  become: yes
+  service:
+    name:  pusher.service
+    state: restarted

@@ -1,0 +1,17 @@
+- name: auto-start engine
+  become: yes
+  service:
+    name: engine.service
+    enabled: yes
+
+- name: restart engine
+  become: yes
+  service:
+    name:  engine.service
+    state: restarted
+
+- name: migrate engine
+  become: yes
+  service:
+    name:  engine-migrations.service
+    state: restarted

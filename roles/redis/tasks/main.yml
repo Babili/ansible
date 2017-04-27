@@ -1,0 +1,37 @@
+- name: copy redis environment file
+  become: yes
+  template:
+    src: redis.env.j2
+    dest: /etc/babili/environments/redis.env
+  notify:
+    - restart redis
+
+- name: ensure redis data container exists
+  become: yes
+  docker_container:
+    name: redis-data
+    image: tianon/true
+    state: present
+    volumes:
+    - /data
+
+- name: copy redis systemd unit
+  become: yes
+  template:
+    src: redis.service.j2
+    dest: /etc/systemd/system/redis.service
+  notify:
+    - reload systemd units
+    - restart redis
+    - auto-start redis
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart redis

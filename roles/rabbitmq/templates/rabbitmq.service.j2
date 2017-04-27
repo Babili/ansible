@@ -1,0 +1,21 @@
+[Unit]
+Description=RabbitMQ
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker rm -v rabbitmq
+ExecStart=/usr/bin/docker run \
+  --name rabbitmq \
+  --hostname rabbitmq.{{ inventory_hostname }} \
+  --net babili \
+  --volumes-from rabbitmq-data \
+  --env-file /etc/babili/environments/rabbitmq.env \
+  {{ docker_image }}
+ExecStop=/usr/bin/docker stop -t 5 rabbitmq
+
+[Install]
+WantedBy=multi-user.target

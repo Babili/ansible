@@ -1,0 +1,2 @@
+docker_image_repository:  "babili/clockwork"
+docker_image_tag:         "latest"

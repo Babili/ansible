@@ -1,0 +1,9 @@
+[Unit]
+Description=Let's encrypt renew HAProxy
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=Clockwork
+After=docker.service engine.service
+Requires=docker.service engine.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker rm -v clockwork
+ExecStart=/usr/bin/docker run \
+  --name clockwork \
+  --hostname clockwork.{{ inventory_hostname }} \
+  --net babili \
+  --env-file /etc/babili/environments/clockwork.env \
+  {{ docker_image }}
+ExecStop=/usr/bin/docker stop -t 5 clockwork
+
+[Install]
+WantedBy=multi-user.target

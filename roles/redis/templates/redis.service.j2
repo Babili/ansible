@@ -1,0 +1,21 @@
+[Unit]
+Description=Redis
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker rm -v redis
+ExecStart=/usr/bin/docker run \
+  --name redis \
+  --hostname redis.{{ inventory_hostname }} \
+  --net babili \
+  --volumes-from redis-data \
+  --env-file /etc/babili/environments/redis.env \
+  {{ docker_image }}
+ExecStop=/usr/bin/docker stop -t 5 redis
+
+[Install]
+WantedBy=multi-user.target

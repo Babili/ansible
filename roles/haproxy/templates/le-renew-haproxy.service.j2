@@ -1,0 +1,12 @@
+[Unit]
+Description=Let's encrypt renew HAProxy
+After=docker.service haproxy.service
+Requires=docker.service haproxy.service
+
+[Service]
+RemainAfterExit=true
+StandardOutput=journal
+ExecStart=/etc/babili/le-renew-haproxy.sh
+
+[Install]
+WantedBy=multi-user.target

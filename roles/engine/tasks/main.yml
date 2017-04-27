@@ -1,0 +1,37 @@
+- name: copy engine environment file
+  become: yes
+  template:
+    src: engine.env.j2
+    dest: /etc/babili/environments/engine.env
+  notify:
+    - restart engine
+
+- name: copy engine systemd unit
+  become: yes
+  template:
+    src: engine.service.j2
+    dest: /etc/systemd/system/engine.service
+  notify:
+    - reload systemd units
+    - restart engine
+    - auto-start engine
+
+- name: copy engine migrations systemd unit
+  become: yes
+  template:
+    src: engine-migrations.service.j2
+    dest: /etc/systemd/system/engine-migrations.service
+  notify:
+    - reload systemd units
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart engine
+    - migrate engine

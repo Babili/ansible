@@ -1,0 +1,37 @@
+- name: copy postgres environment file
+  become: yes
+  template:
+    src: postgres.env.j2
+    dest: /etc/babili/environments/postgres.env
+  notify:
+    - restart postgres
+
+- name: ensure postgres data container exists
+  become: yes
+  docker_container:
+    name: postgres-data
+    image: tianon/true
+    state: present
+    volumes:
+    - /var/lib/postgresql/data
+
+- name: copy postgres systemd unit
+  become: yes
+  template:
+    src: postgres.service.j2
+    dest: /etc/systemd/system/postgres.service
+  notify:
+    - reload systemd units
+    - restart postgres
+    - auto-start postgres
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart postgres

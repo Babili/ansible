@@ -1,0 +1,4 @@
+docker_image_repository:  "haproxy"
+docker_image_tag:         "1.7.5"
+haproxy_combined_file:    "/etc/babili/certificates/{{ external_host }}.pem"
+le_renew_haproxy_file:    ""

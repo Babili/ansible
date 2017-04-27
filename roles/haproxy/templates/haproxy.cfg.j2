@@ -1,0 +1,49 @@
+global
+  nbproc 1
+  tune.ssl.default-dh-param 2048
+  debug
+  maxconn 2048
+
+defaults
+  mode http
+  log global
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+  option forwardfor
+  option http-server-close
+
+listen stats
+  bind 0.0.0.0:1111
+  mode http
+  stats enable
+  stats hide-version
+  stats realm Haproxy\ Statistics
+  stats uri /
+
+frontend http
+  bind 0.0.0.0:80
+
+  redirect scheme https code 301 if !{ ssl_fc }
+
+frontend https
+  bind 0.0.0.0:443 ssl no-tlsv10 crt /etc/haproxy/certs/{{ external_host }}.pem
+
+  acl letsencrypt path_beg /.well-known/acme-challenge/
+  use_backend letsencrypt-backend if letsencrypt
+
+  acl pusher-socket-path path_beg /socket.io
+  use_backend pusher-backend if pusher-socket-path
+
+  default_backend engine-backend
+
+backend engine-backend
+  server engine engine:3000 check
+
+backend pusher-backend
+  option http-server-close
+  option forceclose
+  server pusher pusher:3000 check
+
+backend letsencrypt-backend
+  server letsencrypt {{ internal_host_ip }}:54321 inter 1s fall 1 rise 1

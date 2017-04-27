@@ -1,0 +1,89 @@
+- name: generate UTF8 locale
+  become: yes
+  locale_gen:
+    name: en_US.UTF-8
+    state: present
+
+- name: install vim
+  become: yes
+  apt:
+    name: vim
+    state: present
+    update_cache: yes
+
+- name: export less charset
+  become: yes
+  lineinfile:
+    dest: /etc/environment
+    regexp: "^LESSCHARSET="
+    line: "LESSCHARSET=utf-8"
+
+- name: install docker dependencies
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    -
+
+- name: add docker-ce apt key
+  become: yes
+  apt_key:
+    id: 0EBFCD88
+    url: "https://download.docker.com/linux/debian/gpg"
+    state: present
+
+- name: add docker-ce repository
+  become: yes
+  apt_repository:
+    repo: "deb [arch={{ archictecture }}] https://download.docker.com/linux/debian {{ lsb_release }} stable"
+    state: present
+
+- name: install docker-ce
+  become: yes
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: yes
+
+- name: add docker group
+  become: yes
+  group:
+    name: docker
+    state: present
+
+- name: add admin use to docker group
+  become: yes
+  user:
+    name: admin
+    groups: docker
+    append: yes
+
+- name: install python2-setuptools
+  become: yes
+  apt:
+    name: python-setuptools
+    state: present
+    update_cache: yes
+
+- name: install pip
+  become: yes
+  easy_install:
+    name: pip
+    state: latest
+
+- name: install docker-py
+  become: yes
+  pip:
+    name: docker-py
+    state: present
+
+- name: set hostname
+  become: yes
+  hostname:
+    name: "{{ ansible_host }}"

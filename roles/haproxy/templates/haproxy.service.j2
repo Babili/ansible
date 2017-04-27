@@ -1,0 +1,26 @@
+[Unit]
+Description=Haproxy
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecReload=/usr/bin/docker kill -s HUP haproxy
+ExecStartPre=-/usr/bin/docker rm -v haproxy
+ExecStart=/usr/bin/docker run \
+  --name haproxy \
+  --hostname haproxy.{{ inventory_hostname }} \
+  --net babili \
+  --volume /etc/babili/haproxy.cfg:/etc/haproxy/haproxy.cfg \
+  --volume /etc/babili/certificates/:/etc/haproxy/certs/ \
+  --env-file /etc/babili/environments/haproxy.env \
+  -p 443:443 \
+  -p 80:80 \
+  {{ docker_image }} \
+  /usr/local/sbin/haproxy -f /etc/haproxy/haproxy.cfg
+ExecStop=/usr/bin/docker stop -t 5 haproxy
+
+[Install]
+WantedBy=multi-user.target

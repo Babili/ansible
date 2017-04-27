@@ -1,0 +1,20 @@
+[Unit]
+Description=Engine
+After=docker.service postgres.service redis.service rabbitmq.service
+Requires=docker.service postgres.service redis.service rabbitmq.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker rm -v engine
+ExecStart=/usr/bin/docker run \
+  --name engine \
+  --hostname engine.{{ inventory_hostname }} \
+  --net babili \
+  --env-file /etc/babili/environments/engine.env \
+  {{ docker_image }}
+ExecStop=/usr/bin/docker stop -t 5 engine
+
+[Install]
+WantedBy=multi-user.target

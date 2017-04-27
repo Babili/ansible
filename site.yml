@@ -1,0 +1,7 @@
+- hosts: hosts
+  gather_facts: no
+  become_method: sudo
+
+  roles:
+  - bootstrap-debian-jessie
+  - bootstrap-babili
