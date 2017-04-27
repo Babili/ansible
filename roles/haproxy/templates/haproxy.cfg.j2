@@ -38,6 +38,9 @@ frontend https
   acl pusher-socket-path path_beg /socket.io
   use_backend pusher-backend if pusher-socket-path
 
+  acl rabbitmq-path path_beg /rabbitmq
+  use_backend rabbitmq-backend if rabbitmq-path
+
   default_backend engine-backend
 
 backend engine-backend
@@ -50,3 +53,6 @@ backend pusher-backend
 
 backend letsencrypt-backend
   server letsencrypt {{ internal_host_ip }}:54321 inter 1s fall 1 rise 1
+
+backend rabbitmq-backend
+  server rabbitmq {{ internal_host_ip }}:15672 inter 1s fall 1 rise 1
