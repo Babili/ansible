@@ -1,0 +1,37 @@
+- name: copy event-store environment file
+  become: yes
+  template:
+    src: event-store.env.j2
+    dest: /etc/babili/environments/event-store.env
+  notify:
+    - restart event-store
+
+- name: copy event-store systemd unit
+  become: yes
+  template:
+    src: event-store.service.j2
+    dest: /etc/systemd/system/event-store.service
+  notify:
+    - reload systemd units
+    - restart event-store
+    - auto-start event-store
+
+- name: copy event-store migrations systemd unit
+  become: yes
+  template:
+    src: event-store-migrations.service.j2
+    dest: /etc/systemd/system/event-store-migrations.service
+  notify:
+    - reload systemd units
+
+- name: pull image
+  raw: sudo docker pull {{ docker_image }}
+  changed_when: docker_pull.stdout.find("Downloaded newer image") != -1
+  register: docker_pull
+
+- name: check if image is up to date
+  command: /bin/true
+  when: docker_pull.changed
+  notify:
+    - restart event-store
+    - migrate event-store

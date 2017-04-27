@@ -1,0 +1,17 @@
+- name: auto-start event-store
+  become: yes
+  service:
+    name: event-store.service
+    enabled: yes
+
+- name: restart event-store
+  become: yes
+  service:
+    name:  event-store.service
+    state: restarted
+
+- name: migrate event-store
+  become: yes
+  service:
+    name:  event-store-migrations.service
+    state: restarted

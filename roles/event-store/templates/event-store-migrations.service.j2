@@ -1,0 +1,21 @@
+[Unit]
+Description=Event Store Migrations
+After=docker.service postgres.service rabbitmq.service
+Requires=docker.service postgres.service rabbitmq.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+StandardOutput=journal
+ExecStartPre=-/usr/bin/docker kill event-store-migrations
+ExecStartPre=-/usr/bin/docker rm -v event-store-migrations
+ExecStart=/usr/bin/docker run \
+  --name event-store-migrations \
+  --hostname event-store-migrations.{{ inventory_hostname }} \
+  --net babili \
+  --env-file /etc/babili/environments/event-store.env \
+  {{ docker_image }} \
+  bundle exec rake db:migrate
+
+[Install]
+WantedBy=multi-user.target
